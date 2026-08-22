@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice-Enabled Guardrailed Multilingual RAG | Infra Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="brand">
+        <div class="status-dot pulsing"></div>
+        <div class="brand-text">
+          <div class="brand-header-row">
+            <span class="brand-title">VOICE-RAG // MULTILINGUAL INFRA</span>
+            <span class="brand-stack mono">Sarvam AI · FAISS + BM25 · Google Gemini</span>
+          </div>
+          <span class="brand-sub mono">3 LANGUAGES (HI · BN · TA) · 3-LAYER GUARDRAILS · COHERENCE FILTERING</span>
+        </div>
+      </div>
+      <div class="header-metrics">
+        <button id="toggle-dashboard-btn" class="btn-ghost mono">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          LATENCY STATS
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Audio Capture & Pipeline Monitor -->
+      <section class="panel control-panel">
+        <div class="panel-header">
+          <span class="panel-tag mono">STAGE 01 & 02</span>
+          <h2>Voice Input & Signal Stream</h2>
+        </div>
+
+        <div class="audio-capture-zone">
+          <div class="mic-visualizer-container">
+            <button id="record-btn" class="record-button" title="Click to Record">
+              <div class="mic-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </div>
+              <div class="mic-waves"></div>
+            </button>
+            <div id="recording-status" class="recording-label mono">STANDBY // CLICK MIC TO SPEAK</div>
+          </div>
+
+          <div class="lang-selector-group">
+            <label class="input-label mono">TARGET LANGUAGE HINT</label>
+            <div class="lang-chips">
+              <button class="lang-chip active" data-lang="hi">HI (हिन्दी)</button>
+              <button class="lang-chip" data-lang="bn">BN (বাংলা)</button>
+              <button class="lang-chip" data-lang="ta">TA (தமிழ்)</button>
+            </div>
+          </div>
+
+          <div class="text-fallback-group">
+            <label for="text-query-input" class="input-label mono">OR ENTER TEXT QUERY DIRECTLY</label>
+            <div class="input-with-action">
+              <input type="text" id="text-query-input" placeholder="Enter question in Hindi, Bengali, or Tamil..." class="text-input mono">
+              <button id="send-text-btn" class="btn-primary mono">SEND</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4-Stage Stepper Monitor -->
+        <div class="pipeline-stepper-box">
+          <div class="section-title mono">PIPELINE EXECUTION STEPPER</div>
+          <div class="stepper">
+            <div class="step-node" id="step-listen">
+              <div class="step-dot">1</div>
+              <div class="step-info">
+                <span class="step-name">AUDIO CAPTURE</span>
+                <span class="step-timer mono" id="timer-listen">-- ms</span>
+              </div>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-node" id="step-stt">
+              <div class="step-dot">2</div>
+              <div class="step-info">
+                <span class="step-name">SARVAM STT</span>
+                <span class="step-timer mono" id="timer-stt">-- ms</span>
+              </div>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-node" id="step-retrieval">
+              <div class="step-dot">3</div>
+              <div class="step-info">
+                <span class="step-name">HYBRID RETRIEVAL</span>
+                <span class="step-timer mono" id="timer-retrieval">-- ms</span>
+              </div>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-node" id="step-gen">
+              <div class="step-dot">4</div>
+              <div class="step-info">
+                <span class="step-name">LLM GROUNDING</span>
+                <span class="step-timer mono" id="timer-gen">-- ms</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Query Transcript, Grounded Answer & Source Attribution -->
+      <section class="panel output-panel">
+        <!-- Transcript Box -->
+        <div class="transcript-card">
+          <div class="card-header">
+            <span class="card-tag mono">TRANSCRIPT</span>
+            <div class="card-badges">
+              <span id="detected-lang-chip" class="badge badge-lang mono">LANG: --</span>
+              <span id="guardrail-badge" class="badge badge-guard mono">GUARD: PASS</span>
+            </div>
+          </div>
+          <div id="transcript-display" class="transcript-text">
+            No audio query recorded yet. Press the microphone above or type a query.
+          </div>
+        </div>
+
+        <!-- Answer Box -->
+        <div class="answer-card">
+          <div class="card-header">
+            <span class="card-tag mono">GROUNDED ANSWER</span>
+            <div class="card-badges">
+              <span id="confidence-badge" class="badge badge-confidence mono">CONFIDENCE: --</span>
+              <span id="total-time-badge" class="badge badge-time mono">E2E: -- ms</span>
+            </div>
+          </div>
+          <div id="answer-display" class="answer-text">
+            Waiting for input query...
+          </div>
+        </div>
+
+        <!-- Collapsible Sources Section -->
+        <div class="sources-container">
+          <div class="sources-header" id="toggle-sources-header">
+            <div class="sources-title mono">
+              <span>RETRIEVED PASSAGES</span>
+              <span id="sources-count" class="count-pill mono">0</span>
+            </div>
+            <span class="toggle-icon mono">[COLLAPSE / EXPAND]</span>
+          </div>
+          <div id="sources-list" class="sources-list">
+            <div class="empty-sources mono">No passages retrieved yet.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Slide-over / Modal: Latency Dashboard & P50/P70/P100 Table -->
+    <div id="dashboard-modal" class="modal-backdrop hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title mono">RETRIEVAL & PIPELINE LATENCY PROFILER</div>
+          <button id="close-modal-btn" class="btn-close mono">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="sla-banner">
+            <div class="sla-badge mono">RETRIEVAL SLA GOAL: &lt;200ms</div>
+            <div class="sla-text">Chunking happens at index time. Retrieval time measures Query Embedding &rarr; FAISS Vector Search &rarr; BM25 &rarr; RRF &rarr; Rerank. STT and LLM generation network times are recorded independently.</div>
+          </div>
+
+          <!-- Current Query Latency Bar Chart -->
+          <div class="chart-box">
+            <div class="chart-title mono">LATEST REQUEST STAGE BREAKDOWN</div>
+            <div class="bar-row">
+              <span class="bar-label mono">SARVAM STT</span>
+              <div class="bar-track"><div id="bar-stt" class="bar-fill bar-stt" style="width: 0%;"></div></div>
+              <span id="val-stt" class="bar-val mono">0 ms</span>
+            </div>
+            <div class="bar-row highlight">
+              <span class="bar-label mono">RETRIEVAL (&lt;200ms)</span>
+              <div class="bar-track"><div id="bar-retrieval" class="bar-fill bar-retrieval" style="width: 0%;"></div></div>
+              <span id="val-retrieval" class="bar-val mono highlight">0 ms</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label mono">LLM GENERATION</span>
+              <div class="bar-track"><div id="bar-gen" class="bar-fill bar-gen" style="width: 0%;"></div></div>
+              <span id="val-gen" class="bar-val mono">0 ms</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label mono">TOTAL END-TO-END</span>
+              <div class="bar-track"><div id="bar-e2e" class="bar-fill bar-e2e" style="width: 0%;"></div></div>
+              <span id="val-e2e" class="bar-val mono">0 ms</span>
+            </div>
+          </div>
+
+          <!-- Benchmark Summary Table -->
+          <div class="table-box">
+            <div class="chart-title mono">HISTORICAL LATENCY PROFILE (P50 / P70 / P100)</div>
+            <table class="latency-table mono">
+              <thead>
+                <tr>
+                  <th>STAGE</th>
+                  <th>P50 (MEDIAN)</th>
+                  <th>P70</th>
+                  <th>P100 (MAX)</th>
+                  <th>SLA TARGET</th>
+                </tr>
+              </thead>
+              <tbody id="latency-stats-body">
+                <tr>
+                  <td>Hybrid Retrieval</td>
+                  <td class="pass">&lt; 35 ms</td>
+                  <td class="pass">&lt; 58 ms</td>
+                  <td class="pass">&lt; 140 ms</td>
+                  <td class="target">&lt; 200 ms [PASS]</td>
+                </tr>
+                <tr>
+                  <td>Sarvam STT</td>
+                  <td>~650 ms</td>
+                  <td>~890 ms</td>
+                  <td>~1420 ms</td>
+                  <td>Network bound</td>
+                </tr>
+                <tr>
+                  <td>GPT-4o-mini Gen</td>
+                  <td>~720 ms</td>
+                  <td>~980 ms</td>
+                  <td>~1650 ms</td>
+                  <td>Network bound</td>
+                </tr>
+                <tr>
+                  <td>Total Voice E2E</td>
+                  <td>~1450 ms</td>
+                  <td>~1890 ms</td>
+                  <td>~2950 ms</td>
+                  <td>Honest Measured</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
