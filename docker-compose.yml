@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  voice-rag-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voice_rag_pipeline
+    ports:
+      - "8000:8000"
+    environment:
+      - SARVAM_API_KEY=${SARVAM_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - PORT=8000
+      - HOST=0.0.0.0
+    volumes:
+      - ./data:/app/data
+      - ./eval:/app/eval
+    restart: unless-stopped
