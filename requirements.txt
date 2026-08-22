@@ -1,0 +1,16 @@
+fastapi>=0.110.0
+uvicorn>=0.29.0
+pydantic>=2.7.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+tenacity>=8.3.0
+datasets>=2.18.0
+faiss-cpu>=1.8.0
+sentence-transformers>=2.6.0
+rank-bm25>=0.2.2
+indic-nlp-library>=0.92
+duckdb>=0.10.0
+numpy>=1.26.0
+torch>=2.0.0
+pytest>=8.0.0
+python-multipart>=0.0.9
