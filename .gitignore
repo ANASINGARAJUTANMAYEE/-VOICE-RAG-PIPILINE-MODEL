@@ -1,0 +1,53 @@
+# === SECRET & ENVIRONMENT ===
+.env
+*.env
+.env.*
+!.env.example
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+
+# === Virtual Environments ===
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# === Jupyter ===
+.ipynb_checkpoints/
+*.ipynb
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === Testing & Cache ===
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# === Scratch files (local only) ===
+scratch/
+
+# === Large Binary Artifacts (tracked via Git LFS or reproduced locally) ===
+# Uncomment if you want to exclude large index files:
+# data/faiss_index.bin
+# data/bm25_index.pkl
